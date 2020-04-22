@@ -198,21 +198,48 @@ def handle_image(full_path, extension, global_index, destination_images_path, di
     # endregion
 
     # region 1 -> 48 только ротация и обрезка
+    #
+    # index = 0
+    # images_level_1 = get_rotated_images(resized)
+    #
+    # for image_level_1 in images_level_1:
+    #     images_level_2 = get_flipped_images(image_level_1)
+    #
+    #     for image_level_2 in images_level_2:
+    #         images_level_3 = get_cropped_and_rotated_images(image_level_2)
+    #
+    #         for image_level_3 in images_level_3:
+    #             saved_filename = f'{destination_images_path}/{global_index}_{index}.{extension}'
+    #             save_to_file(image_level_3, saved_filename)
+    #
+    #             index = index + 1
+    #
+    # endregion
+
+    # region 1 -> 768
 
     index = 0
     images_level_1 = get_rotated_images(resized)
 
     for image_level_1 in images_level_1:
-        images_level_2 = get_flipped_images(image_level_1)
+        images_level_2 = get_images_with_filters(image_level_1)
 
         for image_level_2 in images_level_2:
             images_level_3 = get_cropped_and_rotated_images(image_level_2)
 
             for image_level_3 in images_level_3:
-                saved_filename = f'{destination_images_path}/{global_index}_{index}.{extension}'
-                save_to_file(image_level_3, saved_filename)
+                images_level_4 = get_images_with_circles(image_level_3)
 
-                index = index + 1
+                for image_level_4 in images_level_4:
+                    images_level_5 = get_flipped_images(image_level_4)
+
+                    for image_level_5 in images_level_5:
+                        saved_filename = f'{destination_images_path}/{global_index}_{index}.{extension}'
+                        save_to_file(image_level_5, saved_filename)
+
+                        index = index + 1
+
+    # endregion
 
     # index = 0
     # images_level_1 = get_rotated_images(resized)
