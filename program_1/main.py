@@ -148,6 +148,25 @@ def get_images_with_circles(image):
     return [image, draw_random_circle(image.copy())]
 
 
+def flip_horizontal(image):
+    # отразим изображение: 0 – по вертикали, 1 – по горизонтали, (-1) – по вертикали и по горизонтали.
+    return cv2.flip(image, 1)
+
+
+def flip_vertical(image):
+    # отразим изображение: 0 – по вертикали, 1 – по горизонтали, (-1) – по вертикали и по горизонтали.
+    return cv2.flip(image, 0)
+
+
+def flip_horizontal_and_vertical(image):
+    # отразим изображение: 0 – по вертикали, 1 – по горизонтали, (-1) – по вертикали и по горизонтали.
+    return cv2.flip(image, -1)
+
+
+def get_flipped_images(image):
+    return [image, flip_horizontal(image), flip_vertical(image), flip_horizontal_and_vertical(image)]
+
+
 def handle_image(full_path, extension, global_index, destination_images_path, dimension):
     source_image = read_image(full_path, cv2.COLOR_RGB2GRAY)
     resized = cv2.resize(source_image, dimension, interpolation=cv2.INTER_AREA)
@@ -160,12 +179,31 @@ def handle_image(full_path, extension, global_index, destination_images_path, di
     # # endregion
 
     # region 1 -> 30
+    #
+    # index = 0
+    # images_level_1 = [resized]
+    #
+    # for image_level_1 in images_level_1:
+    #     images_level_2 = get_images_with_filters(image_level_1)
+    #
+    #     for image_level_2 in images_level_2:
+    #         images_level_3 = get_cropped_and_rotated_images(image_level_2)
+    #
+    #         for image_level_3 in images_level_3:
+    #             saved_filename = f'{destination_images_path}/{global_index}_{index}.{extension}'
+    #             save_to_file(image_level_3, saved_filename)
+    #
+    #             index = index + 1
+    #
+    # endregion
+
+    # region 1 -> 48 только ротация и обрезка
 
     index = 0
-    images_level_1 = [resized]
+    images_level_1 = get_rotated_images(resized)
 
     for image_level_1 in images_level_1:
-        images_level_2 = get_images_with_filters(image_level_1)
+        images_level_2 = get_flipped_images(image_level_1)
 
         for image_level_2 in images_level_2:
             images_level_3 = get_cropped_and_rotated_images(image_level_2)
@@ -175,8 +213,6 @@ def handle_image(full_path, extension, global_index, destination_images_path, di
                 save_to_file(image_level_3, saved_filename)
 
                 index = index + 1
-
-    # endregion
 
     # index = 0
     # images_level_1 = get_rotated_images(resized)
