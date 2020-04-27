@@ -12,7 +12,7 @@ for gpu in gpus:
 print("Num GPUs available: ", len(gpus))
 
 def main():
-    TRAINING_DIR = 'dataset'
+    TRAINING_DIR = '../images/raw-balls'
     training_datagen = ImageDataGenerator(
         rescale=1. / 255,
         rotation_range=60,
@@ -21,10 +21,11 @@ def main():
         shear_range=0.2,
         zoom_range=0.2,
         horizontal_flip=True,
+        validation_split=0.2,
         fill_mode='nearest')
 
-    VALIDATION_DIR = 'dataset-test'
-    validation_datagen = ImageDataGenerator(rescale=1. / 255)
+    # VALIDATION_DIR = 'dataset-test'
+    # validation_datagen = ImageDataGenerator(rescale=1. / 255)
 
     train_generator = training_datagen.flow_from_directory(
         TRAINING_DIR,
@@ -32,11 +33,17 @@ def main():
         class_mode='categorical'
     )
 
-    validation_generator = validation_datagen.flow_from_directory(
-        VALIDATION_DIR,
+    validation_generator = training_datagen.flow_from_directory(
+        TRAINING_DIR,
         target_size=(150, 150),
         class_mode='categorical'
     )
+
+    # validation_generator = validation_datagen.flow_from_directory(
+    #     VALIDATION_DIR,
+    #     target_size=(150, 150),
+    #     class_mode='categorical'
+    # )
 
     model = tf.keras.models.Sequential([
         tf.keras.layers.Conv2D(64, (3, 3), activation='relu', input_shape=(150, 150, 3)),
