@@ -12,7 +12,7 @@ for gpu in gpus:
 print("Num GPUs available: ", len(gpus))
 
 def main():
-    TRAINING_DIR = '../images/raw-balls'
+    TRAINING_DIR = '../images/balls-for-study'
     training_datagen = ImageDataGenerator(
         rescale=1. / 255,
         rotation_range=60,
@@ -30,13 +30,15 @@ def main():
     train_generator = training_datagen.flow_from_directory(
         TRAINING_DIR,
         target_size=(150, 150),
-        class_mode='categorical'
+        class_mode='categorical',
+        subset='training',
     )
 
     validation_generator = training_datagen.flow_from_directory(
         TRAINING_DIR,
         target_size=(150, 150),
-        class_mode='categorical'
+        class_mode='categorical',
+        subset='validation',
     )
 
     # validation_generator = validation_datagen.flow_from_directory(
@@ -82,14 +84,14 @@ def main():
 
     history = model.fit(
         train_generator,
-        steps_per_epoch=200,
+        steps_per_epoch=train_generator.samples,
         epochs=5,
         validation_data=validation_generator,
-        validation_steps=10,
+        validation_steps=validation_generator.samples,
         verbose=1,
     )
 
-    model.save("model")
+    model.save("../model")
 
     acc = history.history['accuracy']
     val_acc = history.history['val_accuracy']

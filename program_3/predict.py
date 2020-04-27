@@ -16,13 +16,13 @@ print("Num GPUs available: ", len(gpus))
 
 CLASS_NAMES = ['barash', 'car-carich', 'copatich', 'crosh', 'ejik', 'losyash', 'nusha', 'pin', 'sovunja']
 
-model: keras.models.Sequential = keras.models.load_model('../program_2/model')
+model: keras.models.Sequential = keras.models.load_model('../model')
 
 model.summary()
 
 print(CLASS_NAMES)
 
-data_dir = pathlib.Path('predict-examples')
+data_dir = pathlib.Path('../images/balls-for-predict')
 for path in data_dir.glob('*'):
     img = tf.io.read_file(str(path))
     image_decoded = tf.image.decode_png(img, channels=3)
