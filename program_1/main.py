@@ -211,7 +211,7 @@ def handle_image(full_path, extension, global_index, destination_images_path, di
     # - get_flipped_images
     # - get_images_with_circles
 
-    handlers = [get_cropped_and_rotated_images, get_rotated_images, get_flipped_images]
+    handlers = [get_cropped_and_rotated_images]
 
     start_loop(resized, handlers, get_save_to_file_callback(destination_images_path, global_index, extension))
 
