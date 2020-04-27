@@ -8,6 +8,9 @@ import io
 import random
 
 
+default_dimension = (200, 200)  # (width, height)
+
+
 def read_image(image_path, read_format):
     input_image = open(image_path, "rb").read()
     io_bytes = io.BytesIO(input_image)
@@ -197,22 +200,17 @@ def get_save_to_file_callback(destination_images_path, global_index, extension):
     return save_to_file_callback
 
 
-def handle_image(full_path, extension, global_index, destination_images_path, dimension):
+def get_source_image(source_image):
+    return [source_image]
+
+
+def handle_image(full_path, extension, global_index, destination_images_path, dimension, handlers):
     try:
         source_image = read_image(full_path, cv2.COLOR_RGB2GRAY)  # gray теперь падает на gray картинках
     except:
         source_image = read_image(full_path, cv2.COLOR_RGB2BGR)
 
     resized = cv2.resize(source_image, dimension, interpolation=cv2.INTER_AREA)
-
-    # all handlers:
-    # - get_images_with_filters
-    # - get_cropped_and_rotated_images
-    # - get_rotated_images
-    # - get_flipped_images
-    # - get_images_with_circles
-
-    handlers = [get_cropped_and_rotated_images]
 
     start_loop(resized, handlers, get_save_to_file_callback(destination_images_path, global_index, extension))
 
@@ -221,6 +219,16 @@ def handle_image(full_path, extension, global_index, destination_images_path, di
 
 
 def handle_images_for_study(dimension, source_images_path, destination_images_path):
+    # all handlers:
+    # - get_images_with_filters
+    # - get_cropped_and_rotated_images
+    # - get_rotated_images
+    # - get_flipped_images
+    # - get_images_with_circles
+    # - get_source_image
+
+    handlers = [get_source_image]
+
     os.makedirs(destination_images_path)
 
     files_names = [f for f in listdir(source_images_path) if isfile(join(source_images_path, f))]
@@ -231,7 +239,7 @@ def handle_images_for_study(dimension, source_images_path, destination_images_pa
         extension = file_name.split('.')[-1]
         full_path = f'{source_images_path}/{file_name}'
 
-        handle_image(full_path, extension, index, destination_images_path, dimension)
+        handle_image(full_path, extension, index, destination_images_path, dimension, handlers)
 
         index = index + 1
         # print(f'Ready photo: {index} of {len(files_names)}')
@@ -256,7 +264,19 @@ def get_incorrect_dimensions(dimension, images_path):
     print('End of incorrect images')
 
 
-def handle_images_for_tests(dimension, source_images_path, destination_images_path):
+def handle_images_for_predict(dimension, source_images_path, destination_images_path):
+    # all handlers:
+    # - get_images_with_filters
+    # - get_cropped_and_rotated_images
+    # - get_rotated_images
+    # - get_flipped_images
+    # - get_images_with_circles
+    # - get_source_image
+
+    handlers = [get_cropped_and_rotated_images]
+
+    os.makedirs(destination_images_path)
+
     files_names = [f for f in listdir(source_images_path) if isfile(join(source_images_path, f))]
     index = 0
 
@@ -264,11 +284,13 @@ def handle_images_for_tests(dimension, source_images_path, destination_images_pa
         extension = file_name.split('.')[-1]
         full_path = f'{source_images_path}/{file_name}'
 
-        source_image = read_image(full_path, cv2.COLOR_RGB2GRAY)
-        resized = cv2.resize(source_image, dimension, interpolation=cv2.INTER_AREA)
+        handle_image(full_path, extension, index, destination_images_path, dimension, handlers)
 
-        saved_filename = f'{destination_images_path}/{index}.{extension}'
-        save_to_file(resized, saved_filename)
+        # source_image = read_image(full_path, cv2.COLOR_RGB2GRAY)
+        # resized = cv2.resize(source_image, dimension, interpolation=cv2.INTER_AREA)
+        #
+        # saved_filename = f'{destination_images_path}/{index}.{extension}'
+        # save_to_file(resized, saved_filename)
 
         index = index + 1
 
