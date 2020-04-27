@@ -1,3 +1,4 @@
+import os
 from os import listdir
 from os.path import isfile, join
 import cv2
@@ -53,7 +54,9 @@ def crop_image(image, x, y, width, height):
 
 
 def crop_with_saving_size(image, angle, delta):
-    width, height = image.shape
+    width = image.shape[0]
+    height = image.shape[1]
+
     rotated = rotate_image(image, angle)
     cropped = crop_image(rotated, delta, delta, width - delta * 2, height - delta * 2)
     resized = cv2.resize(cropped, (width, height), interpolation=cv2.INTER_AREA)
@@ -167,103 +170,58 @@ def get_flipped_images(image):
     return [image, flip_horizontal(image), flip_vertical(image), flip_horizontal_and_vertical(image)]
 
 
+def start_loop(image, handlers, callback):
+    if len(handlers) == 0:
+        callback(image)
+        return
+
+    [current_handler, *rest_handlers] = handlers
+
+    converted_images = current_handler(image)
+
+    for current_image in converted_images:
+        start_loop(current_image, rest_handlers, callback)
+
+
+def show_callback(image):
+    cv2.imshow(str(random.random()), image)
+
+
+def get_save_to_file_callback(destination_images_path, global_index, extension):
+    index = [0]
+
+    def save_to_file_callback(image):
+        saved_filename = f'{destination_images_path}/{global_index}_{index[0]}.{extension}'
+        save_to_file(image, saved_filename)
+
+        index[0] = index[0] + 1
+
+    return save_to_file_callback
+
+
 def handle_image(full_path, extension, global_index, destination_images_path, dimension):
-    source_image = read_image(full_path, cv2.COLOR_RGB2GRAY)
+    # source_image = read_image(full_path, cv2.COLOR_RGB2GRAY) # gray теперь падает на gray картинках
+    source_image = read_image(full_path, cv2.COLOR_RGB2BGR)
     resized = cv2.resize(source_image, dimension, interpolation=cv2.INTER_AREA)
 
-    # # region 1 -> 1
-    #
-    # saved_filename = f'{destination_images_path}/{global_index}.{extension}'
-    # save_to_file(resized, saved_filename)
-    #
-    # # endregion
+    # all handlers:
+    # - get_images_with_filters
+    # - get_cropped_and_rotated_images
+    # - get_rotated_images
+    # - get_flipped_images
+    # - get_images_with_circles
 
-    # region 1 -> 30
-    #
-    # index = 0
-    # images_level_1 = [resized]
-    #
-    # for image_level_1 in images_level_1:
-    #     images_level_2 = get_images_with_filters(image_level_1)
-    #
-    #     for image_level_2 in images_level_2:
-    #         images_level_3 = get_cropped_and_rotated_images(image_level_2)
-    #
-    #         for image_level_3 in images_level_3:
-    #             saved_filename = f'{destination_images_path}/{global_index}_{index}.{extension}'
-    #             save_to_file(image_level_3, saved_filename)
-    #
-    #             index = index + 1
-    #
-    # endregion
+    handlers = [get_cropped_and_rotated_images, get_rotated_images, get_flipped_images]
 
-    # region 1 -> 48 только ротация и обрезка
-    #
-    # index = 0
-    # images_level_1 = get_rotated_images(resized)
-    #
-    # for image_level_1 in images_level_1:
-    #     images_level_2 = get_flipped_images(image_level_1)
-    #
-    #     for image_level_2 in images_level_2:
-    #         images_level_3 = get_cropped_and_rotated_images(image_level_2)
-    #
-    #         for image_level_3 in images_level_3:
-    #             saved_filename = f'{destination_images_path}/{global_index}_{index}.{extension}'
-    #             save_to_file(image_level_3, saved_filename)
-    #
-    #             index = index + 1
-    #
-    # endregion
-
-    # region 1 -> 768
-
-    index = 0
-    images_level_1 = get_rotated_images(resized)
-
-    for image_level_1 in images_level_1:
-        images_level_2 = get_images_with_filters(image_level_1)
-
-        for image_level_2 in images_level_2:
-            images_level_3 = get_cropped_and_rotated_images(image_level_2)
-
-            for image_level_3 in images_level_3:
-                images_level_4 = get_images_with_circles(image_level_3)
-
-                for image_level_4 in images_level_4:
-                    images_level_5 = get_flipped_images(image_level_4)
-
-                    for image_level_5 in images_level_5:
-                        saved_filename = f'{destination_images_path}/{global_index}_{index}.{extension}'
-                        save_to_file(image_level_5, saved_filename)
-
-                        index = index + 1
-
-    # endregion
-
-    # index = 0
-    # images_level_1 = get_rotated_images(resized)
-    #
-    # for image_level_1 in images_level_1:
-    #     images_level_2 = get_images_with_filters(image_level_1)
-    #
-    #     for image_level_2 in images_level_2:
-    #         images_level_3 = get_cropped_and_rotated_images(image_level_2)
-    #
-    #         for image_level_3 in images_level_3:
-    #             images_level_4 = get_images_with_circles(image_level_3)
-    #
-    #             for image_level_4 in images_level_4:
-    #                 saved_filename = f'{destination_images_path}/{global_index}_{index}.{extension}'
-    #                 save_to_file(image_level_4, saved_filename)
-    #
-    #                 index = index + 1
+    start_loop(resized, handlers, get_save_to_file_callback(destination_images_path, global_index, extension))
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 
 def handle_images_for_study(dimension, source_images_path, destination_images_path):
+    os.makedirs(destination_images_path)
+
     files_names = [f for f in listdir(source_images_path) if isfile(join(source_images_path, f))]
 
     index = 0
@@ -323,10 +281,10 @@ def main():
 
     for ball in balls:
         print(f'Started {ball}')
-        handle_images_for_study(dimension, f'./images/raw-balls/{ball}', f'./images/balls/{ball}')
+        handle_images_for_study(dimension, f'../images/raw-balls/{ball}', f'../images/balls/{ball}')
 
         # можно было бы использовать handle_images_for_tests, но нужно много картинок
-        handle_images_for_study(dimension, f'./images/for-tests-raw/{ball}', f'./images/for-tests/{ball}')
+        # handle_images_for_study(dimension, f'./images/for-tests-raw/{ball}', f'./images/for-tests/{ball}')
 
         # get_incorrect_dimensions(dimension, f'./images/balls/{ball}')
         # get_incorrect_dimensions(dimension, f'./images/for-tests/{ball}')
