@@ -47,8 +47,6 @@ def thresh_image(image, threshold):
     return cv2.threshold(image, threshold, 255, cv2.THRESH_TOZERO)[1]
 
 
-# TODO: картинку приблизить и ресайзнуть к 100
-# TODO: поворачивать картнку на маленький угол, добавлять артефакты на изображение и тд
 def crop_image(image, x, y, width, height):
     return image[y:y + height, x:x + width]
 
@@ -200,8 +198,11 @@ def get_save_to_file_callback(destination_images_path, global_index, extension):
 
 
 def handle_image(full_path, extension, global_index, destination_images_path, dimension):
-    # source_image = read_image(full_path, cv2.COLOR_RGB2GRAY) # gray теперь падает на gray картинках
-    source_image = read_image(full_path, cv2.COLOR_RGB2BGR)
+    try:
+        source_image = read_image(full_path, cv2.COLOR_RGB2GRAY)  # gray теперь падает на gray картинках
+    except:
+        source_image = read_image(full_path, cv2.COLOR_RGB2BGR)
+
     resized = cv2.resize(source_image, dimension, interpolation=cv2.INTER_AREA)
 
     # all handlers:
@@ -272,25 +273,3 @@ def handle_images_for_tests(dimension, source_images_path, destination_images_pa
         index = index + 1
 
     print(f'End: {source_images_path} -> {destination_images_path}')
-
-
-def main():
-    dimension = (200, 200)  # (width, height)
-
-    balls = ['barash', 'car-carich', 'copatich', 'crosh', 'ejik', 'losyash', 'nusha', 'pin', 'sovunja']
-
-    for ball in balls:
-        print(f'Started {ball}')
-        handle_images_for_study(dimension, f'../images/raw-balls/{ball}', f'../images/balls/{ball}')
-
-        # можно было бы использовать handle_images_for_tests, но нужно много картинок
-        # handle_images_for_study(dimension, f'./images/for-tests-raw/{ball}', f'./images/for-tests/{ball}')
-
-        # get_incorrect_dimensions(dimension, f'./images/balls/{ball}')
-        # get_incorrect_dimensions(dimension, f'./images/for-tests/{ball}')
-
-        print()
-
-
-if __name__ == '__main__':
-    main()
