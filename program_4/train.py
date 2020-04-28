@@ -6,10 +6,10 @@ def main():
     print('-- Start --')
 
     labels = ['barash', 'car-carich', 'copatich', 'crosh', 'ejik', 'losyash', 'nusha', 'pin', 'sovunja']
-    train_data, train_labels = get_train_data_and_labels('./images/balls-for-study', labels)
+    train_data, train_labels = get_train_data_and_labels('../images/balls-for-study', labels)
 
     model = CatBoostClassifier(
-        iterations=5,
+        iterations=10,
         # task_type='GPU',
     )
     model.fit(train_data, train_labels)  # обучение классификатора
